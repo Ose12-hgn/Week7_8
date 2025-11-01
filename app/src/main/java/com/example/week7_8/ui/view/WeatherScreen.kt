@@ -21,6 +21,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -34,17 +35,22 @@ fun WeatherScreen(vm: WeatherViewModel = viewModel()) {
     val uiState by vm.uiState.collectAsState()
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF1E3A8A), // Biru tua
-                        Color(0xFF3B82F6)  // Biru cerah
-                    )
-                )
-            )
+        modifier = Modifier.fillMaxSize()
     ) {
+        // Background Image
+        Image(
+            painter = painterResource(id = R.drawable.home),
+            contentDescription = "Background",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+        // Background Image
+        Image(
+            painter = painterResource(id = R.drawable.home),
+            contentDescription = "Background",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
 
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -55,7 +61,10 @@ fun WeatherScreen(vm: WeatherViewModel = viewModel()) {
                 onSearch = { cityName -> vm.fetchWeatherData(cityName) }
             )
 
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
                 when (val state = uiState) {
                     is WeatherUiState.Initial -> InitialView()
                     is WeatherUiState.Loading -> CircularProgressIndicator(color = Color.White)
@@ -67,9 +76,16 @@ fun WeatherScreen(vm: WeatherViewModel = viewModel()) {
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+fun WeatherScreenPreview() {
+    WeatherScreen()
+}
+
 @Composable
 fun SearchBar(modifier: Modifier = Modifier, onSearch: (String) -> Unit) {
     var text by remember { mutableStateOf("") }
+
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -81,7 +97,13 @@ fun SearchBar(modifier: Modifier = Modifier, onSearch: (String) -> Unit) {
             placeholder = { Text("Enter city name...") },
             modifier = Modifier.weight(1f),
             shape = RoundedCornerShape(24.dp),
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.White) },
+            leadingIcon = {
+                Icon(
+                    Icons.Default.Search,
+                    contentDescription = null,
+                    tint = Color.White
+                )
+            },
             singleLine = true,
             colors = TextFieldDefaults.colors(
                 focusedTextColor = Color.White,
@@ -97,10 +119,18 @@ fun SearchBar(modifier: Modifier = Modifier, onSearch: (String) -> Unit) {
         )
         Spacer(modifier = Modifier.width(8.dp))
         Button(
-            onClick = { onSearch(text) },
-            shape = RoundedCornerShape(12.dp)
+            onClick = {
+                if (text.isNotBlank()) {
+                    onSearch(text)
+                }
+            },
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.White,
+                contentColor = Color(0xFF1E3A8A)
+            )
         ) {
-            Text("Search")
+            Text("Search", fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -110,7 +140,7 @@ fun InitialView() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = Modifier.padding(16.dp)
+        modifier = Modifier.padding(24.dp)
     ) {
         Icon(
             imageVector = Icons.Default.Search,
@@ -123,6 +153,14 @@ fun InitialView() {
             text = "Search for a city to get started",
             color = Color.White,
             fontSize = 20.sp,
+            fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "e.g., London, Tokyo, Surabaya",
+            color = Color.White.copy(alpha = 0.7f),
+            fontSize = 16.sp,
             textAlign = TextAlign.Center
         )
     }
@@ -133,19 +171,26 @@ fun ErrorView(message: String) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = Modifier.padding(16.dp)
+        modifier = Modifier.padding(24.dp)
     ) {
-        // ✅ FIXED: Gunakan icon dari Material Icons karena ic_error_triangle tidak ada
-        Icon(
-            imageVector = Icons.Default.Search, // Ganti dengan icon yang tersedia
-            contentDescription = "Error Icon",
-            modifier = Modifier.size(80.dp),
-            tint = Color.Red
+        Text(
+            text = "⚠️",
+            fontSize = 64.sp
         )
         Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "Oops! Something went wrong", color = Color.White, fontSize = 22.sp)
+        Text(
+            text = "Oops!",
+            color = Color.White,
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold
+        )
         Spacer(modifier = Modifier.height(8.dp))
-        Text(text = message, color = Color.LightGray, fontSize = 18.sp)
+        Text(
+            text = message,
+            color = Color.White.copy(alpha = 0.9f),
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center
+        )
     }
 }
 
@@ -157,7 +202,12 @@ fun WeatherDetails(data: Weather) {
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
     ) {
         item {
-            Text(text = data.cityName, fontSize = 36.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(
+                text = data.cityName,
+                fontSize = 36.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
             Spacer(modifier = Modifier.height(24.dp))
 
             Row(
@@ -166,7 +216,12 @@ fun WeatherDetails(data: Weather) {
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = data.condition, fontSize = 32.sp, color = Color.White)
+                    Text(
+                        text = data.condition,
+                        fontSize = 32.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold
+                    )
                     Text(
                         text = data.temperature,
                         fontSize = 72.sp,
@@ -176,7 +231,7 @@ fun WeatherDetails(data: Weather) {
                 }
                 Image(
                     painter = painterResource(id = data.pandaImageRes),
-                    contentDescription = "Panda",
+                    contentDescription = data.condition,
                     modifier = Modifier.size(150.dp)
                 )
             }
@@ -184,14 +239,13 @@ fun WeatherDetails(data: Weather) {
         }
 
         item {
-            // ✅ FIXED: Menggunakan drawable yang tersedia
             val details = listOf(
-                "HUMIDITY" to (data.humidity to R.drawable.WaterDrop),      // Ganti icon_humidity
-                "WIND" to (data.windSpeed to R.drawable.Wind),              // Sesuai dengan yang ada
-                "FEELS LIKE" to (data.feelsLike to R.drawable.Temperature), // Ganti icon_feels_like
-                "RAIN FALL" to (data.rainFall to R.drawable.Rainy),         // Ganti icon_rain
-                "PRESSURE" to (data.pressure to R.drawable.devices),        // Ganti icon_pressure (atau cari icon lain)
-                "CLOUDS" to (data.cloudiness to R.drawable.cloud)           // Sesuai dengan yang ada
+                "HUMIDITY" to (data.humidity to R.drawable.water_drop),
+                "WIND" to (data.windSpeed to R.drawable.wind),
+                "FEELS LIKE" to (data.feelsLike to R.drawable.temperature),
+                "RAIN FALL" to (data.rainFall to R.drawable.rainy),
+                "PRESSURE" to (data.pressure to R.drawable.devices),
+                "CLOUDS" to (data.cloudiness to R.drawable.cloud)
             )
 
             LazyVerticalGrid(
@@ -213,16 +267,15 @@ fun WeatherDetails(data: Weather) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
-                // ✅ FIXED: Menggunakan drawable yang tersedia
                 SunInfo(
                     title = "SUNRISE",
                     time = data.sunriseTime,
-                    iconRes = R.drawable.Sunrise  // Sesuai dengan yang ada
+                    iconRes = R.drawable.sunrise
                 )
                 SunInfo(
                     title = "SUNSET",
                     time = data.sunsetTime,
-                    iconRes = R.drawable.Sunset   // Sesuai dengan yang ada
+                    iconRes = R.drawable.sunset
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -234,11 +287,15 @@ fun WeatherDetails(data: Weather) {
 fun InfoCard(title: String, value: String, iconRes: Int) {
     Card(
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.2f)),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White.copy(alpha = 0.2f)
+        ),
         modifier = Modifier.aspectRatio(1f)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(12.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -249,8 +306,17 @@ fun InfoCard(title: String, value: String, iconRes: Int) {
                 colorFilter = ColorFilter.tint(Color.White)
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = value, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-            Text(text = title, color = Color.LightGray, fontSize = 12.sp)
+            Text(
+                text = value,
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = title,
+                color = Color.LightGray,
+                fontSize = 12.sp
+            )
         }
     }
 }
@@ -266,8 +332,17 @@ fun SunInfo(title: String, time: String, iconRes: Int) {
         )
         Spacer(modifier = Modifier.width(8.dp))
         Column {
-            Text(text = title, color = Color.LightGray, fontSize = 14.sp)
-            Text(text = time, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(
+                text = title,
+                color = Color.LightGray,
+                fontSize = 14.sp
+            )
+            Text(
+                text = time,
+                color = Color.White,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }

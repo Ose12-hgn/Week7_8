@@ -11,12 +11,9 @@ import java.util.Locale
 
 class WeatherRepository(private val apiService: WeatherApiService) {
 
-    // Fungsi ini sekarang mengembalikan Result<Weather> (Model)
-    // bukan Result<WeatherResponse> (DTO)
     suspend fun getWeatherData(city: String): Result<Weather> {
         return try {
             val responseDto = apiService.getWeather(city, WeatherAppContainer.API_KEY)
-            // Ubah DTO mentah menjadi Model yang bersih
             val weatherModel = dtoToModel(responseDto)
             Result.success(weatherModel)
         } catch (e: Exception) {
@@ -24,16 +21,13 @@ class WeatherRepository(private val apiService: WeatherApiService) {
         }
     }
 
-    // --- FUNGSI MAPPING (LOGIKA DIPINDAH KE SINI) ---
-
-    // Ini adalah inti dari pemisahan: mengubah DTO ke Model
     private fun dtoToModel(dto: WeatherResponse): Weather {
         val weatherCondition = dto.weather.firstOrNull()?.main ?: "Clear"
 
         return Weather(
             cityName = dto.name,
-            temperature = "${dto.main.temp.toInt()}°C",  // ✅ FIXED: Karakter derajat yang benar
-            feelsLike = "${dto.main.feelsLike.toInt()}°",  // ✅ FIXED: Karakter derajat yang benar
+            temperature = "${dto.main.temp.toInt()}°C",
+            feelsLike = "${dto.main.feelsLike.toInt()}°",
             condition = weatherCondition,
             humidity = "${dto.main.humidity}%",
             windSpeed = "${dto.wind.speed} km/h",
@@ -52,12 +46,14 @@ class WeatherRepository(private val apiService: WeatherApiService) {
     }
 
     private fun getPandaImage(weatherCondition: String): Int {
-        // ✅ FIXED: Menyesuaikan dengan nama drawable yang tersedia
-        return when (weatherCondition.lowercase()) {
-            "rain", "drizzle" -> R.drawable.RainyPanda// Ganti dari panda_rain
-            "clouds" -> R.drawable.CloudyPanda          // Ganti dari panda_cloud
-            "clear" -> R.drawable.SunnyPanda            // Ganti dari panda_clear
-            else -> R.drawable.SunnyPanda
+        return when (weatherCondition.lowercase(Locale.getDefault())) {
+            "rain", "drizzle" -> R.drawable.rainy_panda
+            "clouds" -> R.drawable.cloudy_panda
+            "clear" -> R.drawable.sunny_panda
+            "thunderstorm" -> R.drawable.rainy_panda
+            "snow" -> R.drawable.cloudy_panda
+            "mist", "smoke", "haze", "dust", "fog", "sand", "ash", "squall", "tornado" -> R.drawable.cloudy_panda
+            else -> R.drawable.sunny_panda
         }
     }
 }
